@@ -1,3 +1,7 @@
+import pandas as pd
+import json
+import os
+import csv
 from datetime import timedelta
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
@@ -8,49 +12,48 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-import csv
-import os
-import json
-import pandas as pd
 
 csv_temperature_path = '/tmp/cc-p2/temperature.csv'
-csv_humidity_path    = '/tmp/cc-p2/humidity.csv'
-csv_data_path        = '/tmp/cc-p2/data.csv'
-csv_columns          = ['DATE','TEMP','HUM']
+csv_humidity_path = '/tmp/cc-p2/humidity.csv'
+csv_data_path = '/tmp/cc-p2/data.csv'
+csv_columns = ['DATE', 'TEMP', 'HUM']
 
-db_url    = 'localhost'
-db_port   = 27017
-db_name   = 'CC'
+db_url = 'localhost'
+db_port = 27017
+db_name = 'CC'
 coll_name = 'SanFrancisco_Weather'
 
 '''
 Limpieza de datos: nos queadmos con las columnas que necestiamos y luego las almacenamos en un CSV
 '''
+
+
 def capture_data():
     df_temperature = pd.DataFrame(pd.read_csv(csv_temperature_path)).dropna()
-    df_humidity    = pd.DataFrame(pd.read_csv(csv_humidity_path)).dropna()
+    df_humidity = pd.DataFrame(pd.read_csv(csv_humidity_path)).dropna()
 
     temperature = df_temperature[['datetime', 'San Francisco']]
-    humidity    = df_humidity[['datetime', 'San Francisco']]
+    humidity = df_humidity[['datetime', 'San Francisco']]
 
     data = temperature.merge(humidity, on='datetime')
-    data.columns = csv_columns 
-
+    data.columns = csv_columns
 
     data.to_csv(csv_data_path, index=False)
+
 
 '''
 Guardar el archivo CSV con los datos preparados en mongo
 '''
+
+
 def store_mongo():
     client = MongoClient(db_url, int(db_port))
     db = client[db_name]
     coll = db[coll_name]
     data = pd.read_csv(csv_data_path)
     payload = json.loads(data.to_json(orient='records'))
-    coll.drop() #Por si hay registros previos
+    coll.drop()  # Por si hay registros previos
     coll.insert_many(payload)
-
 
 
 '''
@@ -67,7 +70,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-#Inicialización del grafo DAG de tareas para el flujo de trabajo
+# Inicialización del grafo DAG de tareas para el flujo de trabajo
 dag = DAG(
     'Practica_2',
     default_args=default_args,
@@ -77,11 +80,10 @@ dag = DAG(
 )
 
 
-
 Environment = BashOperator(
     task_id="Environment",
     depends_on_past=False,
-    bash_command="mkdir -p /tmp/cc-p2",
+    bash_command="mkdir -p /tmp/cc-p2; cp /home/pedro/WeatherCloudNative/.env /tmp/cc-p2/.env",
     dag=dag
 )
 
@@ -129,14 +131,14 @@ UnZipTemperature = BashOperator(
 )
 
 CaptureData = PythonOperator(
-	task_id="CaptureData",
+    task_id="CaptureData",
     depends_on_past=False,
     python_callable=capture_data,
     dag=dag
 )
 
 StoreMongo = PythonOperator(
-	task_id="StoreMongo",
+    task_id="StoreMongo",
     depends_on_past=False,
     python_callable=store_mongo,
     dag=dag
@@ -178,5 +180,6 @@ StartApiV2 = BashOperator(
     dag=dag
 )
 
-#Dependencias
-Environment >> DownloadCompose >> MongoDBStart >> [DownloadHumidity >> UnZipHumidity, DownloadTemperature >> UnZipTemperature] >> CaptureData >> StoreMongo >> DownloadCode >> Test >> [StartApiV1, StartApiV2]
+# Dependencias
+Environment >> DownloadCompose >> MongoDBStart >> [DownloadHumidity >> UnZipHumidity, DownloadTemperature >>
+                                                   UnZipTemperature] >> CaptureData >> StoreMongo >> DownloadCode >> Test >> [StartApiV1, StartApiV2]
