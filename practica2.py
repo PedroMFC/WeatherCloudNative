@@ -166,7 +166,7 @@ Test = BashOperator(
 StartApiV1 = BashOperator(
     task_id="StartApiV1",
     depends_on_past=False,
-    bash_command="docker-compose -f /tmp/cc-p2/docker-compose.yml up --build api_v1",
+    bash_command="docker-compose -f /tmp/cc-p2/docker-compose.yml up --build -d api_v1",
     dag=dag
 )
 
@@ -174,10 +174,9 @@ StartApiV1 = BashOperator(
 StartApiV2 = BashOperator(
     task_id="StartApiV2",
     depends_on_past=False,
-    bash_command="docker-compose -f /tmp/cc-p2/docker-compose.yml up --build api_v2",
+    bash_command="docker-compose -f /tmp/cc-p2/docker-compose.yml up --build -d api_v2",
     dag=dag
 )
 
 #Dependencias
 Environment >> DownloadCompose >> MongoDBStart >> [DownloadHumidity >> UnZipHumidity, DownloadTemperature >> UnZipTemperature] >> CaptureData >> StoreMongo >> DownloadCode >> Test >> [StartApiV1, StartApiV2]
-#StartApiV1 >> StartApiV2

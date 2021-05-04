@@ -13,13 +13,11 @@ def index24():
 
 @app.get('/servicio/v2/prediccion/48')
 def index48():
-    bottle.response.status = 200
     bottle.response.headers['Content-Type'] = 'application/json'
     return json.dumps(forecast_api.get_fromAPI(2))
 
 @app.get('/servicio/v2/prediccion/72')
 def index72():
-    bottle.response.status = 200
     bottle.response.headers['Content-Type'] = 'application/json'
     return json.dumps(forecast_api.get_fromAPI(3))
 

@@ -27,11 +27,4 @@ def get_fromAPI(days):
         'temperature': temperature
     }
 
-    original_stdout = sys.stdout # Save a reference to the original standard output
-
-    with open('filename.txt', 'w') as f:
-        sys.stdout = f # Change the standard output to the file we created.
-        print(forecast)
-        sys.stdout = original_stdout # Reset the standard output to its original value
-
     return forecast
