@@ -85,6 +85,13 @@ Environment = BashOperator(
     dag=dag
 )
 
+DownloadCompose = BashOperator(
+    task_id="DownloadCompose",
+    depends_on_past=False,
+    bash_command="curl -o /tmp/cc-p2/docker-compose.yml https://raw.githubusercontent.com/PedroMFC/WeatherCloudNative/main/docker-compose.yml",
+    dag=dag
+)
+
 MongoDBStart = BashOperator(
     task_id="MongoDBStart",
     depends_on_past=False,
@@ -136,6 +143,41 @@ StoreMongo = PythonOperator(
 )
 
 
+DownloadCode = BashOperator(
+    task_id="DownloadCode",
+    depends_on_past=False,
+    bash_command="curl -o /tmp/cc-p2/Dockerfile.api1 https://raw.githubusercontent.com/PedroMFC/WeatherCloudNative/main/Dockerfile.api1;" +
+                 "curl -o /tmp/cc-p2/Dockerfile.api2 https://raw.githubusercontent.com/PedroMFC/WeatherCloudNative/main/Dockerfile.api2;" +
+                 "curl -o /tmp/cc-p2/Dockerfile.test https://raw.githubusercontent.com/PedroMFC/WeatherCloudNative/main/Dockerfile.test;" +
+                 "curl -o /tmp/cc-p2/requirements.txt https://raw.githubusercontent.com/PedroMFC/WeatherCloudNative/main/requirements.txt;" +
+                 "curl -o /tmp/cc-p2/.dockerignore https://raw.githubusercontent.com/PedroMFC/WeatherCloudNative/main/.dockerignore;" +
+                 "svn export --force https://github.com/PedroMFC/WeatherCloudNative/trunk/code /tmp/cc-p2/code",
+    dag=dag
+)
+
+StartApiV1 = BashOperator(
+    task_id="StartApiV1",
+    depends_on_past=False,
+    bash_command="docker-compose -f /tmp/cc-p2/docker-compose.yml up --build api_v1",
+    dag=dag
+)
+
+
+StartApiV2 = BashOperator(
+    task_id="StartApiV2",
+    depends_on_past=False,
+    bash_command="docker-compose -f /tmp/cc-p2/docker-compose.yml up --build api_v2",
+    dag=dag
+)
+
+Test = BashOperator(
+    task_id="Test",
+    depends_on_past=False,
+    bash_command="docker-compose -f /tmp/cc-p2/docker-compose.yml up --build test",
+    dag=dag
+)
+
 
 #Dependencias
-Environment >> MongoDBStart >> [DownloadHumidity >> UnZipHumidity, DownloadTemperature >> UnZipTemperature] >> CaptureData >> StoreMongo
+# Environment >> DownloadCompose >> MongoDBStart >> [DownloadHumidity >> UnZipHumidity, DownloadTemperature >> UnZipTemperature] >> CaptureData >> StoreMongo >> DownloadCode >> Test >> [StartApiV1, StartApiV2]
+StartApiV1 >> StartApiV2

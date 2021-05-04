@@ -4,3 +4,4 @@ pymongo==3.11.3
 pandas==1.2.4
 WebTest==2.0.35
 statsmodels==0.12.2
+requests

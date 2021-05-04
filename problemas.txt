@@ -4,3 +4,4 @@ assuser
 encontrar la API
 ver el tipo de entrada de ARIMA
 lo de las fechas
+svn descargar folder

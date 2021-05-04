@@ -4,12 +4,11 @@ WORKDIR /app
 
 COPY requirements.txt ./
 
-RUN pip install --upgrade pip 
-RUN pip3 install -r requirements.txt 
-RUN useradd -ms /bin/bash api_v2_user
-RUN pip3 install requests
+RUN pip install --upgrade pip \
+&& pip3 install -r requirements.txt \
+&& useradd -ms /bin/bash api_v2_user
 
-#COPY api_v2.py ./
+COPY api_v2.py ./
 
 USER api_v2_user 
 
