@@ -14,4 +14,4 @@ USER api_v2_user
 
 EXPOSE 8083
 
-CMD ["python3","code/api_v2.py"]
+CMD ["python3","api_v2.py"]

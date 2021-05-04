@@ -12,4 +12,4 @@ COPY api_v1.py test.py ./
 
 USER test
 
-CMD ["python3","code/test.py"]
+CMD ["python3","test.py"]
