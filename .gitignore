@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# De la app
+.env
+pruebas/*
+.vscode
+test.txt

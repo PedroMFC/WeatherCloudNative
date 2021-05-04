@@ -1,0 +1,57 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo:4.2
+    ports: 
+      - 27017:27017
+    volumes:
+      - ./datos_db:/data/db
+
+  mongo-express:
+    image: mongo-express
+    ports:
+      - 8081:8081
+    depends_on: 
+      - mongo
+
+  api_v1:
+    build: 
+      context: .
+      dockerfile: Dockerfile.api1
+    ports: 
+      - "8082:8082"
+    volumes: 
+      - "$PWD:/app"
+    environment:
+      - PORT_APIV1=${PORT_APIV1}
+      - HOST_APIV1=${HOST_APIV1}
+      - DB_URL=${DB_URL}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - COLL_NAME=${COLL_NAME}
+      - TRAIN_SIZE=${TRAIN_SIZE}
+
+  api_v2:
+    build: 
+      context: .
+      dockerfile: Dockerfile.api2
+    ports: 
+      - "8083:8083"
+    volumes: 
+      - "$PWD:/app"
+    environment:
+      - API_KEY=${API_KEY}
+      - URL_BASE=${URL_BASE}
+      - CITY=${CITY}
+      - PORT_APIV2=${PORT_APIV2}
+      - HOST_APIV2=${HOST_APIV2}
+
+  test:
+    build: 
+      context: .
+      dockerfile: Dockerfile.test
+    volumes: 
+      - "$PWD:/app"
+    environment: 
+      - TRAIN_SIZE=${TRAIN_SIZE}
