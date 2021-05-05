@@ -26,8 +26,6 @@ coll_name = 'SanFrancisco_Weather'
 '''
 Limpieza de datos: nos queadmos con las columnas que necestiamos y luego las almacenamos en un CSV
 '''
-
-
 def capture_data():
     df_temperature = pd.DataFrame(pd.read_csv(csv_temperature_path)).dropna()
     df_humidity = pd.DataFrame(pd.read_csv(csv_humidity_path)).dropna()
@@ -44,8 +42,6 @@ def capture_data():
 '''
 Guardar el archivo CSV con los datos preparados en mongo
 '''
-
-
 def store_mongo():
     client = MongoClient(db_url, int(db_port))
     db = client[db_name]
